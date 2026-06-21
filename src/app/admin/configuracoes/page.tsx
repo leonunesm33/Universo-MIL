@@ -17,10 +17,10 @@ const GRUPOS = [
     permissions: ['Cursos', 'POP', 'Pesquisa de Clima', 'Checklist', 'NPS Líderes', 'Minha Equipe', 'Perfil'],
   },
   {
-    role: 'GESTAO',
-    label: 'Gestão',
-    description: 'Acesso ao painel admin para gerenciar conteúdo e relatórios',
-    permissions: ['Painel Admin', 'Plataforma', 'Alunos', 'Relatórios', 'POP', 'Clima', 'Checklist', 'NPS Líderes'],
+    role: 'GERENTE',
+    label: 'Gerente',
+    description: 'Tudo do Colaborador + acesso a POP e pesquisas de loja',
+    permissions: ['Cursos', 'POP', 'Pesquisa de Clima', 'NPS Líderes', 'Perfil'],
   },
   {
     role: 'ADMIN',
