@@ -28,9 +28,9 @@ interface HistoryItem {
 export function Header({ user, role, logoUrl }: HeaderProps) {
   const pathname = usePathname()
   const isAdmin = role === 'ADMIN'
-  const canPOP = ['SUPERVISAO', 'GERENTE', 'ADMIN'].includes(role)
+  const canPOP = ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'].includes(role)
   const canEquipe = ['SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
-  const canChecklist = ['SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
+  const canChecklist = ['COLABORADOR', 'SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
   const canAdminPanel = ['SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
   const initials = user.name.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase() || '?'
 
@@ -99,7 +99,7 @@ export function Header({ user, role, logoUrl }: HeaderProps) {
     { href: '/homepage', label: 'Início', match: (p: string) => p === '/homepage' },
     { href: '/favoritos', label: 'Favoritos', match: (p: string) => p === '/favoritos' },
     { href: '/pesquisa-clima', label: 'Clima', match: (p: string) => p.startsWith('/pesquisa-clima') },
-    { href: '/satisfacao', label: 'Satisfação', match: (p: string) => p.startsWith('/satisfacao') },
+    { href: '/satisfacao', label: 'NPS Líderes', match: (p: string) => p.startsWith('/satisfacao') },
     ...(canPOP ? [{ href: '/pop', label: 'POP', match: (p: string) => p.startsWith('/pop') }] : []),
     ...(canChecklist ? [{ href: '/checklist', label: 'Checklist', match: (p: string) => p.startsWith('/checklist') }] : []),
     ...(canEquipe ? [{ href: '/equipe', label: 'Minha Equipe', match: (p: string) => p.startsWith('/equipe') }] : []),

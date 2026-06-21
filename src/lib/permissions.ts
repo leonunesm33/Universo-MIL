@@ -22,8 +22,8 @@ export type Feature =
 export const PERMISSIONS: Record<Feature, AppRole[]> = {
   learning:         ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
   clima:            ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
-  pop:              ['SUPERVISAO', 'GERENTE', 'ADMIN'],
-  checklist_answer: ['SUPERVISAO', 'GESTAO', 'ADMIN'],
+  pop:              ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
+  checklist_answer: ['COLABORADOR', 'SUPERVISAO', 'GESTAO', 'ADMIN'],
   checklist_dash:   ['GESTAO', 'ADMIN'],
   team_evolution:   ['SUPERVISAO', 'GESTAO', 'ADMIN'],
   admin_panel:      ['ADMIN'],

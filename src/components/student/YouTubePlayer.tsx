@@ -59,7 +59,7 @@ export function YouTubePlayer({
   useEffect(() => {
     const interval = setInterval(async () => {
       const player = playerRef.current
-      if (!player) return
+      if (!player || typeof player.getPlayerState !== 'function') return
       if (player.getPlayerState() !== YT.PlayerState.PLAYING) return
 
       const watchedSecs = Math.floor(player.getCurrentTime())
