@@ -1,0 +1,515 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  COLABORADOR
+  SUPERVISAO
+  GERENTE
+  GESTAO
+  ADMIN
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum LessonType {
+  VIDEO
+  ASSESSMENT
+}
+
+enum AssessmentType {
+  COMMON
+  CERT
+}
+
+enum AssessmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LikeType {
+  LIKE
+  DISLIKE
+}
+
+enum CertificateType {
+  MODULE
+  COURSE
+}
+
+// ─── STORE ─────────────────────────────────────────────────────────────────
+
+model Store {
+  id        String   @id @default(uuid())
+  name      String
+  code      String?  @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users              User[]
+  checklistResponses ChecklistResponse[]
+  climateResponses   ClimateResponse[]
+}
+
+// ─── USER ──────────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  passwordHash    String?
+  cpf             String?   @unique
+  phone           String?
+  avatar          String?
+  role            Role      @default(COLABORADOR)
+  blocked         Boolean   @default(false)
+  blockedComments Boolean   @default(false)
+  lastAccessAt    DateTime?
+  createdAt       DateTime  @default(now())
+  storeId         String?
+  store           Store?    @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  courses            UserCourse[]
+  progress           LessonProgress[]
+  favorites          Favorite[]
+  likes              Like[]
+  assessments        AssessmentResponse[]
+  notesAboutMe       StudentNote[]        @relation("StudentNotes")
+  notesByMe          StudentNote[]        @relation("AdminNotes")
+  loginLogs          LoginLog[]
+  inviteTokens       InviteToken[]
+  popDocuments       POPDocument[]        @relation("POPAuthor")
+  climateResponses   ClimateResponse[]
+  checklistResponses ChecklistResponse[]  @relation("ChecklistResponder")
+  npsResponses       NPSResponse[]        @relation("NPSResponder")
+  certificates       Certificate[]
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  banner      String?
+  description String?
+  status      CourseStatus @default(DRAFT)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+
+  modules      Module[]
+  enrollments  UserCourse[]
+  certificates Certificate[]
+}
+
+model Module {
+  id        String  @id @default(uuid())
+  courseId  String
+  title     String
+  slug      String
+  thumbnail String?
+  order     Int     @default(0)
+
+  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons      Lesson[]
+  certificates Certificate[]
+  assessments  Assessment[]
+}
+
+model Lesson {
+  id           String     @id @default(uuid())
+  moduleId     String
+  title        String
+  slug         String
+  youtubeUrl   String?
+  description  String?
+  durationSecs Int?
+  thumbnail    String?
+  documentUrl  String?
+  type         LessonType @default(VIDEO)
+  order        Int        @default(0)
+
+  module      Module              @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress    LessonProgress[]
+  favorites   Favorite[]
+  likes       Like[]
+  assessments Assessment[]
+}
+
+model UserCourse {
+  userId     String
+  courseId   String
+  enrolledAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+}
+
+model LessonProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  lessonId    String
+  watchedSecs Int       @default(0)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Assessment {
+  id           String           @id @default(uuid())
+  lessonId     String?
+  moduleId     String?
+  title        String
+  type         AssessmentType   @default(COMMON)
+  status       AssessmentStatus @default(ACTIVE)
+  passingScore Int?
+
+  lesson    Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  module    Module?              @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questions Question[]
+  responses AssessmentResponse[]
+}
+
+model Question {
+  id           String @id @default(uuid())
+  assessmentId String
+  text         String
+  type         String @default("SINGLE")
+  order        Int    @default(0)
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  options    Option[]
+}
+
+model Option {
+  id         String  @id @default(uuid())
+  questionId String
+  text       String
+  isCorrect  Boolean @default(false)
+  order      Int     @default(0)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model AssessmentResponse {
+  id           String   @id @default(uuid())
+  userId       String
+  assessmentId String
+  answers      Json
+  score        Int?
+  passed       Boolean?
+  submittedAt  DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Like {
+  id       String   @id @default(uuid())
+  userId   String
+  lessonId String
+  type     LikeType
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model StudentNote {
+  id               String   @id @default(uuid())
+  adminId          String
+  studentId        String
+  content          String
+  visibleToStudent Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+
+  admin   User @relation("AdminNotes", fields: [adminId], references: [id])
+  student User @relation("StudentNotes", fields: [studentId], references: [id])
+}
+
+model LoginLog {
+  id        String   @id @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InviteToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PlatformConfig {
+  id           String   @id @default("singleton")
+  platformName String   @default("Universo Mil")
+  logoUrl      String?
+  primaryColor String   @default("#EC55B5")
+  youtubeUrl   String?
+  instagramUrl String?
+  facebookUrl  String?
+  websiteUrl   String?
+  updatedAt    DateTime @updatedAt
+}
+
+// ─── CERTIFICATES ──────────────────────────────────────────────────────────
+
+model Certificate {
+  id       String          @id @default(uuid())
+  userId   String
+  type     CertificateType
+  courseId String?
+  moduleId String?
+  issuedAt DateTime        @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId, type])
+  @@unique([userId, courseId, type])
+}
+
+// ─── POP ───────────────────────────────────────────────────────────────────
+
+enum POPStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model POPDocument {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  content     String    @db.Text
+  category    String?
+  order       Int       @default(0)
+  status      POPStatus @default(DRAFT)
+  fileUrl     String?
+  linkUrl     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String
+
+  createdBy User @relation("POPAuthor", fields: [createdById], references: [id])
+}
+
+// ─── PESQUISA DE CLIMA ─────────────────────────────────────────────────────
+
+enum ClimateQuestionType {
+  SCALE
+  MULTIPLE
+  TEXT
+}
+
+model ClimateResearch {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  isActive    Boolean   @default(true)
+  isAnonymous Boolean   @default(true)
+  fileUrl     String?
+  linkUrl     String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  questions ClimateQuestion[]
+  responses ClimateResponse[]
+}
+
+model ClimateQuestion {
+  id         String              @id @default(uuid())
+  researchId String
+  text       String
+  type       ClimateQuestionType @default(SCALE)
+  options    Json?
+  scaleMin   Int?                @default(1)
+  scaleMax   Int?                @default(5)
+  order      Int                 @default(0)
+  required   Boolean             @default(true)
+
+  research ClimateResearch @relation(fields: [researchId], references: [id], onDelete: Cascade)
+  answers  ClimateAnswer[]
+}
+
+model ClimateResponse {
+  id          String   @id @default(uuid())
+  researchId  String
+  userId      String?
+  storeId     String?
+  submittedAt DateTime @default(now())
+
+  research ClimateResearch @relation(fields: [researchId], references: [id], onDelete: Cascade)
+  user     User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  store    Store?          @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  answers  ClimateAnswer[]
+}
+
+model ClimateAnswer {
+  id         String @id @default(uuid())
+  responseId String
+  questionId String
+  value      String
+
+  response ClimateResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question ClimateQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+// ─── CHECKLIST ─────────────────────────────────────────────────────────────
+
+enum ChecklistStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model ChecklistTemplate {
+  id          String          @id @default(uuid())
+  title       String
+  description String?
+  fileUrl     String?
+  linkUrl     String?
+  status      ChecklistStatus @default(ACTIVE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  items     ChecklistItem[]
+  responses ChecklistResponse[]
+}
+
+model ChecklistItem {
+  id         String  @id @default(uuid())
+  templateId String
+  text       String
+  category   String?
+  order      Int     @default(0)
+  required   Boolean @default(true)
+
+  template ChecklistTemplate    @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  answers  ChecklistAnswerItem[]
+}
+
+model ChecklistResponse {
+  id          String   @id @default(uuid())
+  templateId  String
+  responderId String
+  storeName   String
+  storeCode   String?
+  storeId     String?
+  notes       String?
+  score       Float?
+  submittedAt DateTime @default(now())
+
+  template  ChecklistTemplate    @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  responder User                 @relation("ChecklistResponder", fields: [responderId], references: [id])
+  store     Store?               @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  items     ChecklistAnswerItem[]
+}
+
+model ChecklistAnswerItem {
+  id         String  @id @default(uuid())
+  responseId String
+  itemId     String
+  ok         Boolean
+  note       String?
+
+  response ChecklistResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  item     ChecklistItem     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+// ─── NPS LÍDERES ───────────────────────────────────────────────────────────
+
+model NPSCampaign {
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  isActive     Boolean   @default(true)
+  deadlineDate DateTime?
+  createdAt    DateTime  @default(now())
+  closedAt     DateTime?
+
+  responses NPSResponse[]
+  questions NPSQuestion[]
+  leaders   NPSLeader[]
+}
+
+model NPSLeader {
+  id         String @id @default(uuid())
+  campaignId String
+  name       String
+
+  campaign  NPSCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  responses NPSResponse[]
+}
+
+model NPSQuestion {
+  id         String  @id @default(uuid())
+  campaignId String
+  text       String
+  type       String  @default("SCALE")
+  options    Json?
+  order      Int     @default(0)
+
+  campaign NPSCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  answers  NPSAnswer[]
+}
+
+model NPSAnswer {
+  id         String @id @default(uuid())
+  responseId String
+  questionId String
+  value      String
+
+  response NPSResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question NPSQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model NPSResponse {
+  id          String   @id @default(uuid())
+  campaignId  String
+  responderId String
+  leaderId    String?
+  score       Int
+  comment     String?
+  submittedAt DateTime @default(now())
+
+  campaign  NPSCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  responder User        @relation("NPSResponder", fields: [responderId], references: [id])
+  leader    NPSLeader?  @relation(fields: [leaderId], references: [id], onDelete: SetNull)
+  answers   NPSAnswer[]
+
+  @@unique([campaignId, responderId])
+}
