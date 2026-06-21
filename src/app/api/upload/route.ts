@@ -16,7 +16,7 @@ const ALLOWED_TYPES = [
   'text/plain',
   'text/csv',
 ]
-const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
+const MAX_SIZE = 20 * 1024 * 1024 // 20 MB
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (file.size > MAX_SIZE) {
-    return NextResponse.json({ error: 'Arquivo muito grande (máx 10 MB)' }, { status: 400 })
+    return NextResponse.json({ error: 'Arquivo muito grande (máx 20 MB)' }, { status: 400 })
   }
 
   const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin'

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { updateChecklistTemplate } from '@/app/admin/actions/checklist'
 import { ChecklistItemBuilder } from '../../ChecklistItemBuilder'
 import { DeleteChecklistButton } from '../../DeleteChecklistButton'
+import { FileUploadInput } from '@/components/admin/FileUploadInput'
 
 const inputClass = 'w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-brand bg-white'
 const labelClass = 'block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5'
@@ -66,8 +67,8 @@ export default async function EditarChecklistPage({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>URL do arquivo</label>
-              <input name="fileUrl" type="url" defaultValue={template.fileUrl ?? ''} placeholder="https://..." className={inputClass} />
+              <label className={labelClass}>Arquivo</label>
+              <FileUploadInput name="fileUrl" defaultValue={template.fileUrl ?? ''} />
             </div>
             <div>
               <label className={labelClass}>Link externo</label>

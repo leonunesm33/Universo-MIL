@@ -20,7 +20,7 @@ type NavSection = {
 
 const navSections: NavSection[] = [
   {
-    title: 'Análise',
+    title: 'Analítico',
     roles: ['SUPERVISAO', 'GESTAO', 'ADMIN'],
     items: [
       {
@@ -62,7 +62,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'Gestão',
+    title: 'Gerencial',
     roles: ['ADMIN'],
     items: [
       {
@@ -136,7 +136,7 @@ const navSections: NavSection[] = [
       },
       {
         href: '/admin/nps',
-        label: 'Satisfação',
+        label: 'NPS Líderes',
         roles: ['ADMIN'],
         icon: (
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -144,6 +144,12 @@ const navSections: NavSection[] = [
           </svg>
         ),
       },
+    ],
+  },
+  {
+    title: 'Configurações',
+    roles: ['ADMIN'],
+    items: [
       {
         href: '/admin/configuracoes',
         label: 'Configurações',
@@ -170,10 +176,9 @@ export function AdminSidebar({ adminName, userRole }: AdminSidebarProps) {
 
   useEffect(() => {
     const stored = localStorage.getItem('sidebar-expanded')
-    if (stored === 'true') {
-      setExpanded(true)
-      document.documentElement.dataset.sidebarExpanded = 'true'
-    }
+    const isExpanded = stored === null ? true : stored === 'true'
+    setExpanded(isExpanded)
+    document.documentElement.dataset.sidebarExpanded = String(isExpanded)
   }, [])
 
   function toggleExpanded() {

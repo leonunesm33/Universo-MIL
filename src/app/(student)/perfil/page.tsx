@@ -36,8 +36,8 @@ export default function PerfilPage() {
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Arquivo muito grande. Máx. 2MB.')
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Arquivo muito grande. Máx. 20MB.')
       return
     }
     setUploadingAvatar(true)
@@ -140,7 +140,7 @@ export default function PerfilPage() {
             className="hidden"
             onChange={handleAvatarUpload}
           />
-          <p className="text-xs text-gray-500 mt-1">JPG, PNG ou WEBP, máx. 2MB</p>
+          <p className="text-xs text-gray-500 mt-1">JPG, PNG ou WEBP, máx. 20MB</p>
         </div>
       </div>
 

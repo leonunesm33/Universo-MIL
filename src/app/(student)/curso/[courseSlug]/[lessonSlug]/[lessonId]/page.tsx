@@ -3,10 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { extractVideoId } from '@/lib/youtube'
 import Link from 'next/link'
-import { YouTubePlayer } from '@/components/student/YouTubePlayer'
-import { LikeButtons } from '@/components/student/LikeButtons'
-import { FavoriteButton } from '@/components/student/FavoriteButton'
-import { ConcluirButton } from '@/components/student/ConcluirButton'
+import { LessonVideoSection } from '@/components/student/LessonVideoSection'
 
 export default async function LessonPage({
   params,
@@ -102,76 +99,19 @@ export default async function LessonPage({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
           {/* Main: player + controls + info */}
           <div>
-            {/* Player */}
-            <div className="w-full bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
-              {videoId ? (
-                <YouTubePlayer
-                  videoId={videoId}
-                  lessonId={lesson.id}
-                  durationSecs={lesson.durationSecs ?? 0}
-                  initialWatchedSecs={userProgress?.watchedSecs ?? 0}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[#111]">
-                  <span className="text-gray-600 text-sm">Sem vídeo disponível</span>
-                </div>
-              )}
-            </div>
-
-            {/* Controls row — below player */}
-            <div className="flex items-center justify-between mt-3 pb-4 border-b border-[#1e1e1e]">
-              {/* Left: prev | Concluir | next */}
-              <div className="flex items-center gap-2">
-                {prevLesson ? (
-                  <Link
-                    href={`/curso/${courseSlug}/${prevLesson.slug}/${prevLesson.id}`}
-                    aria-label="Aula anterior"
-                    className="w-11 h-11 rounded-lg border border-[#333] flex items-center justify-center text-gray-400 hover:border-[#555] hover:text-gray-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                  >
-                    <svg viewBox="0 0 16 16" className="w-4 h-4" aria-hidden="true">
-                      <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-                    </svg>
-                  </Link>
-                ) : (
-                  <span aria-disabled="true" aria-label="Sem aula anterior" className="w-11 h-11 rounded-lg border border-[#1a1a1a] flex items-center justify-center text-gray-700">
-                    <svg viewBox="0 0 16 16" className="w-4 h-4" aria-hidden="true">
-                      <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-                    </svg>
-                  </span>
-                )}
-
-                <ConcluirButton lessonId={lesson.id} initialCompleted={isCompleted} />
-
-                {nextLesson ? (
-                  <Link
-                    href={`/curso/${courseSlug}/${nextLesson.slug}/${nextLesson.id}`}
-                    aria-label="Próxima aula"
-                    className="w-11 h-11 rounded-lg border border-[#333] flex items-center justify-center text-gray-400 hover:border-[#555] hover:text-gray-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                  >
-                    <svg viewBox="0 0 16 16" className="w-4 h-4" aria-hidden="true">
-                      <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-                    </svg>
-                  </Link>
-                ) : (
-                  <span aria-disabled="true" aria-label="Sem próxima aula" className="w-11 h-11 rounded-lg border border-[#1a1a1a] flex items-center justify-center text-gray-700">
-                    <svg viewBox="0 0 16 16" className="w-4 h-4" aria-hidden="true">
-                      <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-                    </svg>
-                  </span>
-                )}
-              </div>
-
-              {/* Right: favorite + like + dislike */}
-              <div className="flex items-center gap-2">
-                <FavoriteButton lessonId={lesson.id} initialFavorited={isFavorited} />
-                <LikeButtons
-                  lessonId={lesson.id}
-                  initialLike={userLike?.type ?? null}
-                  likeCount={likeCount}
-                  dislikeCount={dislikeCount}
-                />
-              </div>
-            </div>
+            <LessonVideoSection
+              videoId={videoId}
+              lessonId={lesson.id}
+              durationSecs={lesson.durationSecs ?? 0}
+              initialWatchedSecs={userProgress?.watchedSecs ?? 0}
+              initialCompleted={isCompleted}
+              prevHref={prevLesson ? `/curso/${courseSlug}/${prevLesson.slug}/${prevLesson.id}` : null}
+              nextHref={nextLesson ? `/curso/${courseSlug}/${nextLesson.slug}/${nextLesson.id}` : null}
+              initialLike={userLike?.type ?? null}
+              likeCount={likeCount}
+              dislikeCount={dislikeCount}
+              isFavorited={isFavorited}
+            />
 
             {/* Lesson info */}
             <div className="mt-4 pb-6">

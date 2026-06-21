@@ -1,5 +1,7 @@
 import { getDashboardMetrics } from '@/app/admin/actions/metrics'
 import { LoginChart } from '@/components/admin/LoginChart'
+import { StudentDonutChart } from '@/components/admin/StudentDonutChart'
+import { LikedDislikedTabs } from '@/components/admin/LikedDislikedTabs'
 import { StoreFilter } from '@/components/admin/StoreFilter'
 import { prisma } from '@/lib/prisma'
 
@@ -76,7 +78,7 @@ export default async function AdminDashboard({
       </div>
 
       {/* Metric cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {metricCards.map((card) => (
           <div key={card.label} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
             <div className={`inline-flex p-2.5 rounded-lg ${card.color} mb-3`}>{card.icon}</div>
@@ -86,60 +88,110 @@ export default async function AdminDashboard({
         ))}
       </div>
 
-      {/* Login chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-4">
-        <h2 className="text-sm font-semibold text-slate-700 mb-4">Logins (últimos 30 dias)</h2>
-        <LoginChart data={metrics.loginChartData} />
+      {/* Charts row: Donut + Login area chart */}
+      <div className="grid lg:grid-cols-2 gap-5 mb-5">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+          <h2 className="text-sm font-semibold text-slate-700 mb-4">Novos Alunos por Período</h2>
+          <StudentDonutChart
+            last7={metrics.studentsLast7Days}
+            last30={metrics.studentsLast30Days}
+            last90={metrics.studentsLast90Days}
+          />
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+          <h2 className="text-sm font-semibold text-slate-700 mb-4">Logins (últimos 30 dias)</h2>
+          <LoginChart
+            data={metrics.loginChartData}
+            summary={{
+              days1: metrics.loginLast1Day,
+              days7: metrics.loginLast7Days,
+              days30: metrics.loginLast30Days,
+            }}
+          />
+        </div>
       </div>
 
-      {/* Liked / Disliked lessons */}
-      <div className="grid lg:grid-cols-2 gap-4 mb-4">
+      {/* Bottom row: Engaged students | Popular courses | Liked/Disliked tabs */}
+      <div className="grid lg:grid-cols-3 gap-5 mb-5">
+        {/* Alunos mais engajados */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">👍 Aulas mais curtidas</h2>
-          {metrics.topLikedLessons.length === 0 ? (
+          <h2 className="text-sm font-semibold text-slate-700 mb-4">Alunos Mais Engajados</h2>
+          {metrics.topEngagedStudents.length === 0 ? (
             <p className="text-sm text-slate-400">Sem dados ainda.</p>
           ) : (
-            <div className="space-y-2">
-              {metrics.topLikedLessons.map((lesson, i) => (
-                <div key={lesson.id} className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-300 w-5 text-right">{i + 1}</span>
+            <div className="space-y-3">
+              {metrics.topEngagedStudents.map((student, i) => (
+                <div key={student.id} className="flex items-center gap-2.5">
+                  <span className="text-xs font-bold text-slate-300 w-4 shrink-0 text-right">{i + 1}</span>
+                  {student.avatar ? (
+                    <img src={student.avatar} alt={student.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-brand/20 text-brand flex items-center justify-center text-xs font-bold shrink-0">
+                      {student.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">{lesson.title}</p>
-                    <p className="text-xs text-slate-400">{lesson.courseName}</p>
+                    <p className="text-xs font-medium text-slate-700 truncate">{student.name}</p>
+                    <p className="text-[11px] text-slate-400">
+                      {student.completedLessons} aulas · {student.passedAssessments} avaliações
+                    </p>
                   </div>
-                  <span className="text-sm font-bold text-emerald-600">+{lesson.likes}</span>
+                  <span className="shrink-0 text-xs font-bold text-brand bg-brand/10 px-1.5 py-0.5 rounded">
+                    {student.score}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
+        {/* Cursos populares */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">👎 Aulas menos curtidas</h2>
-          {metrics.topDislikedLessons.length === 0 ? (
-            <p className="text-sm text-slate-400">Sem dados ainda.</p>
+          <h2 className="text-sm font-semibold text-slate-700 mb-4">Cursos Populares</h2>
+          {metrics.popularCourses.length === 0 ? (
+            <p className="text-sm text-slate-400">Nenhum curso ainda.</p>
           ) : (
-            <div className="space-y-2">
-              {metrics.topDislikedLessons.map((lesson, i) => (
-                <div key={lesson.id} className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-300 w-5 text-right">{i + 1}</span>
+            <div className="space-y-3">
+              {metrics.popularCourses.map((course, i) => (
+                <div key={course.id} className="flex items-center gap-2.5">
+                  <span className="text-xs font-bold text-slate-300 w-4 shrink-0 text-right">{i + 1}</span>
+                  {course.banner ? (
+                    <img
+                      src={course.banner}
+                      alt={course.name}
+                      className="w-10 h-7 rounded object-cover shrink-0 bg-slate-100"
+                    />
+                  ) : (
+                    <div className="w-10 h-7 rounded bg-slate-100 flex items-center justify-center shrink-0">
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+                      </svg>
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">{lesson.title}</p>
-                    <p className="text-xs text-slate-400">{lesson.courseName}</p>
+                    <p className="text-xs font-medium text-slate-700 truncate">{course.name}</p>
+                    <p className="text-[11px] text-slate-400">{course.enrollmentCount} matrículas</p>
                   </div>
-                  <span className="text-sm font-bold text-rose-600">-{lesson.dislikes}</span>
                 </div>
               ))}
             </div>
           )}
+        </div>
+
+        {/* Liked / Disliked tabs */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+          <LikedDislikedTabs
+            topLiked={metrics.topLikedLessons}
+            topDisliked={metrics.topDislikedLessons}
+          />
         </div>
       </div>
 
       {/* Course evolution */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-slate-700">Evolução por Curso</h2>
-        </div>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-5">
+        <h2 className="text-sm font-semibold text-slate-700 mb-4">Evolução por Curso</h2>
         {metrics.courseProgress.length === 0 ? (
           <p className="text-sm text-slate-400">Nenhum curso publicado.</p>
         ) : (
@@ -166,8 +218,7 @@ export default async function AdminDashboard({
       </div>
 
       {/* Bottom row: checklist + clima + NPS */}
-      <div className="grid lg:grid-cols-3 gap-4 mb-4">
-        {/* Checklist score */}
+      <div className="grid lg:grid-cols-3 gap-4 mb-5">
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">Score Geral — Checklists</h2>
           <div className="flex items-center gap-4">
@@ -191,7 +242,6 @@ export default async function AdminDashboard({
           )}
         </div>
 
-        {/* Clima avg */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">Pesquisa de Clima — Média</h2>
           <div className="flex items-center gap-4">
@@ -203,7 +253,6 @@ export default async function AdminDashboard({
           </div>
         </div>
 
-        {/* NPS */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">Satisfação da Equipe (NPS)</h2>
           <div className="flex items-center gap-4">

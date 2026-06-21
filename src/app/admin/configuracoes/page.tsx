@@ -17,12 +17,6 @@ const GRUPOS = [
     permissions: ['Cursos', 'POP', 'Pesquisa de Clima', 'Checklist', 'NPS Líderes', 'Minha Equipe', 'Perfil'],
   },
   {
-    role: 'GERENTE',
-    label: 'Gerente',
-    description: 'Tudo do Colaborador + visão completa da equipe',
-    permissions: ['Cursos', 'POP', 'Pesquisa de Clima', 'Checklist', 'NPS Líderes', 'Minha Equipe', 'Perfil'],
-  },
-  {
     role: 'GESTAO',
     label: 'Gestão',
     description: 'Acesso ao painel admin para gerenciar conteúdo e relatórios',

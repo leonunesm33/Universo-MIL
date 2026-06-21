@@ -7,6 +7,7 @@ interface YouTubePlayerProps {
   lessonId: string
   durationSecs: number
   initialWatchedSecs?: number
+  onVideoCompleted?: () => void
 }
 
 export function YouTubePlayer({
@@ -14,6 +15,7 @@ export function YouTubePlayer({
   lessonId,
   durationSecs,
   initialWatchedSecs = 0,
+  onVideoCompleted,
 }: YouTubePlayerProps) {
   const playerRef = useRef<YT.Player | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -52,6 +54,8 @@ export function YouTubePlayer({
     }
   }, [videoId, initialWatchedSecs])
 
+  const completedFiredRef = useRef(false)
+
   useEffect(() => {
     const interval = setInterval(async () => {
       const player = playerRef.current
@@ -62,6 +66,11 @@ export function YouTubePlayer({
       const totalDuration = player.getDuration() || durationSecs
       const completed = totalDuration > 0 && watchedSecs >= totalDuration * 0.95
 
+      if (completed && !completedFiredRef.current) {
+        completedFiredRef.current = true
+        onVideoCompleted?.()
+      }
+
       await fetch(`/api/lessons/${lessonId}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,7 +79,7 @@ export function YouTubePlayer({
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [lessonId, durationSecs])
+  }, [lessonId, durationSecs, onVideoCompleted])
 
   return (
     <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">

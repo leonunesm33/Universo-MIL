@@ -2,8 +2,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function getDashboardMetrics(storeId?: string) {
   const now = new Date()
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
 
   const userWhere = {
     role: { not: 'ADMIN' as const },
@@ -17,6 +19,9 @@ export async function getDashboardMetrics(storeId?: string) {
     publishedCourses,
     recentStudents,
     loginLogs,
+    studentsLast7Days,
+    studentsLast30Days,
+    studentsLast90Days,
   ] = await Promise.all([
     prisma.user.count({ where: userWhere }),
     prisma.user.count({ where: { ...userWhere, lastAccessAt: { gte: sevenDaysAgo } } }),
@@ -36,6 +41,9 @@ export async function getDashboardMetrics(storeId?: string) {
       where: { createdAt: { gte: thirtyDaysAgo }, ...(storeId ? { user: { storeId } } : {}) },
       select: { createdAt: true },
     }),
+    prisma.user.count({ where: { ...userWhere, createdAt: { gte: sevenDaysAgo } } }),
+    prisma.user.count({ where: { ...userWhere, createdAt: { gte: thirtyDaysAgo } } }),
+    prisma.user.count({ where: { ...userWhere, createdAt: { gte: ninetyDaysAgo } } }),
   ])
 
   // Group logins by day
@@ -47,6 +55,10 @@ export async function getDashboardMetrics(storeId?: string) {
   const loginChartData = Object.entries(loginsByDay)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, count]) => ({ date: date.slice(5), count }))
+
+  const loginLast1Day = loginLogs.filter((l) => l.createdAt >= oneDayAgo).length
+  const loginLast7Days = loginLogs.filter((l) => l.createdAt >= sevenDaysAgo).length
+  const loginLast30Days = loginLogs.length
 
   // Top liked/disliked lessons
   const lessonLikes = await prisma.like.groupBy({
@@ -82,24 +94,80 @@ export async function getDashboardMetrics(storeId?: string) {
   )
 
   const topLikedLessons = Object.entries(likeMap)
-    .map(([id, likes]) => ({
-      id,
-      title: lessonTitleMap[id]?.title ?? '—',
-      courseName: lessonTitleMap[id]?.courseName ?? '—',
-      likes,
-    }))
+    .map(([id, likes]) => {
+      const dislikes = dislikeMap[id] ?? 0
+      return {
+        id,
+        title: lessonTitleMap[id]?.title ?? '—',
+        courseName: lessonTitleMap[id]?.courseName ?? '—',
+        likes,
+        dislikes,
+        likeRatio: Math.round((likes / Math.max(1, likes + dislikes)) * 100),
+      }
+    })
     .sort((a, b) => b.likes - a.likes)
     .slice(0, 5)
 
   const topDislikedLessons = Object.entries(dislikeMap)
-    .map(([id, dislikes]) => ({
-      id,
-      title: lessonTitleMap[id]?.title ?? '—',
-      courseName: lessonTitleMap[id]?.courseName ?? '—',
-      dislikes,
-    }))
+    .map(([id, dislikes]) => {
+      const likes = likeMap[id] ?? 0
+      return {
+        id,
+        title: lessonTitleMap[id]?.title ?? '—',
+        courseName: lessonTitleMap[id]?.courseName ?? '—',
+        dislikes,
+        likes,
+        likeRatio: Math.round((likes / Math.max(1, likes + dislikes)) * 100),
+      }
+    })
     .sort((a, b) => b.dislikes - a.dislikes)
     .slice(0, 5)
+
+  // Top engaged students
+  const engagedRaw = await prisma.user.findMany({
+    where: userWhere,
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      _count: {
+        select: {
+          progress: { where: { completed: true } },
+          assessments: { where: { passed: true } },
+        },
+      },
+    },
+  })
+  const topEngagedStudents = engagedRaw
+    .map((u) => ({
+      id: u.id,
+      name: u.name,
+      avatar: u.avatar,
+      completedLessons: u._count.progress,
+      passedAssessments: u._count.assessments,
+      score: u._count.progress * 10 + u._count.assessments * 20,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+
+  // Popular courses by enrollment
+  const popularCoursesRaw = await prisma.course.findMany({
+    where: { status: 'PUBLISHED' },
+    select: {
+      id: true,
+      name: true,
+      banner: true,
+      _count: { select: { enrollments: true } },
+    },
+    orderBy: { enrollments: { _count: 'desc' } },
+    take: 5,
+  })
+  const popularCourses = popularCoursesRaw.map((c) => ({
+    id: c.id,
+    name: c.name,
+    banner: c.banner,
+    enrollmentCount: c._count.enrollments,
+  }))
 
   // Course evolution
   const courses = await prisma.course.findMany({
@@ -228,6 +296,12 @@ export async function getDashboardMetrics(storeId?: string) {
     activeStudents,
     totalCompleted,
     publishedCourses,
+    studentsLast7Days,
+    studentsLast30Days,
+    studentsLast90Days,
+    loginLast1Day,
+    loginLast7Days,
+    loginLast30Days,
     recentStudents: recentStudents.map((s) => ({
       ...s,
       createdAt: s.createdAt.toISOString(),
@@ -236,6 +310,8 @@ export async function getDashboardMetrics(storeId?: string) {
     loginChartData,
     topLikedLessons,
     topDislikedLessons,
+    topEngagedStudents,
+    popularCourses,
     courseProgress,
     checklistAvgScore,
     checklistResponseCount,
