@@ -21,12 +21,12 @@ type NavSection = {
 const navSections: NavSection[] = [
   {
     title: 'Analítico',
-    roles: ['SUPERVISAO', 'GESTAO', 'ADMIN'],
+    roles: ['SUPERVISAO', 'ADMIN'],
     items: [
       {
         href: '/admin/dashboard',
         label: 'Dashboard',
-        roles: ['SUPERVISAO', 'GESTAO', 'ADMIN'],
+        roles: ['SUPERVISAO', 'ADMIN'],
         icon: (
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -39,7 +39,7 @@ const navSections: NavSection[] = [
       {
         href: '/admin/relatorios',
         label: 'Relatórios',
-        roles: ['SUPERVISAO', 'GESTAO', 'ADMIN'],
+        roles: ['SUPERVISAO', 'ADMIN'],
         icon: (
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"/>
@@ -52,7 +52,7 @@ const navSections: NavSection[] = [
       {
         href: '/admin/ranking',
         label: 'Ranking',
-        roles: ['SUPERVISAO', 'GESTAO', 'ADMIN'],
+        roles: ['SUPERVISAO', 'ADMIN'],
         icon: (
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>

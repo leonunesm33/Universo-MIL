@@ -28,10 +28,10 @@ interface HistoryItem {
 export function Header({ user, role, logoUrl }: HeaderProps) {
   const pathname = usePathname()
   const isAdmin = role === 'ADMIN'
-  const canPOP = ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'].includes(role)
-  const canEquipe = ['SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
-  const canChecklist = ['COLABORADOR', 'SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
-  const canAdminPanel = ['SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
+  const canPOP = ['GERENTE', 'ADMIN'].includes(role)
+  const canEquipe = ['SUPERVISAO', 'ADMIN'].includes(role)
+  const canChecklist = ['SUPERVISAO', 'ADMIN'].includes(role)
+  const canAdminPanel = ['SUPERVISAO', 'ADMIN'].includes(role)
   const initials = user.name.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase() || '?'
 
   const [activePanel, setActivePanel] = useState<'search' | 'history' | 'profile' | null>(null)

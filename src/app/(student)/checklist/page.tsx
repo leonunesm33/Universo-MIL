@@ -11,7 +11,7 @@ export default async function ChecklistPage() {
   if (!session) redirect('/login')
 
   const role = session.user.role as AppRole
-  const canSeeHistory = ['SUPERVISAO', 'GESTAO', 'ADMIN'].includes(role)
+  const canSeeHistory = ['SUPERVISAO', 'ADMIN'].includes(role)
 
   const [templates, history] = await Promise.all([
     prisma.checklistTemplate.findMany({

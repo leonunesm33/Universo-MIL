@@ -20,15 +20,15 @@ export type Feature =
   | 'nps'               // NPS / Satisfação da equipe
 
 export const PERMISSIONS: Record<Feature, AppRole[]> = {
-  learning:         ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
-  clima:            ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
-  pop:              ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
-  checklist_answer: ['COLABORADOR', 'SUPERVISAO', 'GESTAO', 'ADMIN'],
-  checklist_dash:   ['GESTAO', 'ADMIN'],
-  team_evolution:   ['SUPERVISAO', 'GESTAO', 'ADMIN'],
+  learning:         ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'ADMIN'],
+  clima:            ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'ADMIN'],
+  pop:              ['GERENTE', 'ADMIN'],
+  checklist_answer: ['SUPERVISAO', 'ADMIN'],
+  checklist_dash:   ['ADMIN'],
+  team_evolution:   ['SUPERVISAO', 'ADMIN'],
   admin_panel:      ['ADMIN'],
-  admin_analytics:  ['SUPERVISAO', 'GESTAO', 'ADMIN'],
-  nps:              ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'GESTAO', 'ADMIN'],
+  admin_analytics:  ['SUPERVISAO', 'ADMIN'],
+  nps:              ['COLABORADOR', 'SUPERVISAO', 'GERENTE', 'ADMIN'],
 }
 
 export function can(role: AppRole, feature: Feature): boolean {
