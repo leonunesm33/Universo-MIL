@@ -108,9 +108,10 @@ export default async function AlunoPage({
               defaultValue={student.role}
               className="text-sm rounded-lg border border-slate-200 px-3 py-2 bg-white focus:outline-none focus:border-brand"
             >
-              <option value="COLABORADOR">Colaborador</option>
-              <option value="SUPERVISAO">Supervisão</option>
               <option value="ADMIN">Admin</option>
+              <option value="COLABORADOR">Colaborador</option>
+              <option value="GERENTE">Gerente</option>
+              <option value="SUPERVISAO">Supervisão</option>
             </select>
           </div>
           {stores.length > 0 && (
