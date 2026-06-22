@@ -36,11 +36,10 @@ export function LessonVideoSection({
   isFavorited,
 }: LessonVideoSectionProps) {
   const router = useRouter()
-  // Unlock the button immediately if the user already watched ≥90% in a prior session
   const alreadyWatched = durationSecs > 0 && initialWatchedSecs / durationSecs >= 0.90
   const [videoCompleted, setVideoCompleted] = useState(!videoId || alreadyWatched)
 
-  const effectiveVideoCompleted = videoCompleted
+  const handleVideoCompleted = useCallback(() => setVideoCompleted(true), [])
 
   const handleAutoComplete = useCallback(async () => {
     await fetch(`/api/lessons/${lessonId}/progress`, {
@@ -61,7 +60,7 @@ export function LessonVideoSection({
             lessonId={lessonId}
             durationSecs={durationSecs}
             initialWatchedSecs={initialWatchedSecs}
-            onVideoCompleted={() => setVideoCompleted(true)}
+            onVideoCompleted={handleVideoCompleted}
             onAutoComplete={handleAutoComplete}
           />
         ) : (
@@ -95,7 +94,7 @@ export function LessonVideoSection({
           <ConcluirButton
             lessonId={lessonId}
             initialCompleted={initialCompleted}
-            videoCompleted={effectiveVideoCompleted}
+            videoCompleted={videoCompleted}
           />
 
           {nextHref ? (

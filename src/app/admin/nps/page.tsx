@@ -17,11 +17,17 @@ export default async function AdminNPSPage() {
     },
   })
 
-  function calcNPS(scores: number[]) {
+  function calcAvg(scores: number[]) {
     if (scores.length === 0) return null
-    const promoters = scores.filter((s) => s >= 9).length
-    const detractors = scores.filter((s) => s <= 6).length
-    return Math.round(((promoters - detractors) / scores.length) * 100)
+    return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+  }
+
+  function avgTextColor(avg: string | null) {
+    if (avg === null) return 'text-slate-400'
+    const n = parseFloat(avg)
+    if (n >= 8) return 'text-green-600'
+    if (n >= 6) return 'text-amber-600'
+    return 'text-red-600'
   }
 
   return (
@@ -50,11 +56,7 @@ export default async function AdminNPSPage() {
         <div className="space-y-4">
           {campaigns.map((c) => {
             const scores = c.responses.map((r) => r.score)
-            const nps = calcNPS(scores)
-            const npsColor = nps === null ? 'text-slate-400'
-              : nps >= 50 ? 'text-green-600'
-              : nps >= 0 ? 'text-amber-600'
-              : 'text-red-600'
+            const avg = calcAvg(scores)
 
             return (
               <div key={c.id} className="bg-white rounded-xl border border-slate-200 p-5">
@@ -73,8 +75,8 @@ export default async function AdminNPSPage() {
                     )}
                     <div className="flex items-center gap-4 text-sm text-slate-500">
                       <span>{scores.length} resposta{scores.length !== 1 ? 's' : ''}</span>
-                      <span className={`font-bold ${npsColor}`}>
-                        NPS: {nps !== null ? nps : '—'}
+                      <span className={`font-bold ${avgTextColor(avg)}`}>
+                        Média: {avg ?? '—'}
                       </span>
                       {c.deadlineDate && (
                         <span>

@@ -23,6 +23,12 @@ export function YouTubePlayer({
   const containerRef = useRef<HTMLDivElement>(null)
   const completedFiredRef = useRef(false)
   const autoCompleteFiredRef = useRef(false)
+  // Always-fresh refs so the YT event handler never captures a stale closure
+  const onVideoCompletedRef = useRef(onVideoCompleted)
+  const onAutoCompleteRef = useRef(onAutoComplete)
+
+  useEffect(() => { onVideoCompletedRef.current = onVideoCompleted }, [onVideoCompleted])
+  useEffect(() => { onAutoCompleteRef.current = onAutoComplete }, [onAutoComplete])
 
   useEffect(() => {
     if (!document.getElementById('youtube-iframe-api')) {
@@ -45,6 +51,20 @@ export function YouTubePlayer({
           modestbranding: 1,
           start: Math.floor(initialWatchedSecs),
         },
+        events: {
+          onStateChange: (event: { data: number }) => {
+            // ENDED fires immediately — don't wait for the 5-second poll
+            if (event.data !== YT.PlayerState.ENDED) return
+            if (!completedFiredRef.current) {
+              completedFiredRef.current = true
+              onVideoCompletedRef.current?.()
+            }
+            if (!autoCompleteFiredRef.current) {
+              autoCompleteFiredRef.current = true
+              onAutoCompleteRef.current?.()
+            }
+          },
+        },
       })
     }
 
@@ -64,22 +84,17 @@ export function YouTubePlayer({
       if (!player || typeof player.getPlayerState !== 'function') return
 
       const state = player.getPlayerState()
-      // Run checks when playing OR when video has ended
       if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.ENDED) return
 
       const watchedSecs = Math.floor(player.getCurrentTime())
-      // getDuration() returns 0 before metadata loads — fall back to DB value
-      const totalDuration = (player.getDuration() > 0 ? player.getDuration() : durationSecs)
-
+      const totalDuration = player.getDuration() > 0 ? player.getDuration() : durationSecs
       const pct = totalDuration > 0 ? watchedSecs / totalDuration : 0
 
-      // Unlock button at 90%
       if (pct >= 0.90 && !completedFiredRef.current) {
         completedFiredRef.current = true
         onVideoCompleted?.()
       }
 
-      // Auto-complete at 99% or on ENDED
       if ((pct >= 0.99 || state === YT.PlayerState.ENDED) && !autoCompleteFiredRef.current) {
         autoCompleteFiredRef.current = true
         onAutoComplete?.()

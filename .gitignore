@@ -52,3 +52,22 @@ public/uploads/*
 
 # dev prompt files
 prompt-*.md
+
+# AI development workflow
+.claude/
+CLAUDE.md
+AGENTS.md
+
+# Development planning & internal docs
+plans/
+docs/screenshots/
+
+# Development scripts & demo assets
+scripts/
+videos/
+setup-wsl.sh
+prisma/seed-demo.ts
+
+# Temporary test screenshots (root level)
+*.png
+*.webm

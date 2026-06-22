@@ -8,10 +8,16 @@ interface Props { params: Promise<{ id: string }> }
 
 export const metadata = { title: 'Admin — Resultados Satisfação da Equipe' }
 
-function npsCategory(score: number) {
-  if (score >= 9) return { label: 'Promotor', color: 'bg-green-100 text-green-700' }
-  if (score >= 7) return { label: 'Neutro', color: 'bg-amber-100 text-amber-700' }
-  return { label: 'Detrator', color: 'bg-red-100 text-red-700' }
+function scoreTextColor(score: number) {
+  if (score >= 8) return 'text-green-600'
+  if (score >= 6) return 'text-amber-600'
+  return 'text-red-600'
+}
+
+function scoreBarColor(score: number) {
+  if (score >= 8) return 'bg-green-400'
+  if (score >= 6) return 'bg-amber-400'
+  return 'bg-red-400'
 }
 
 export default async function NPSDetailsPage({ params }: Props) {
@@ -35,15 +41,22 @@ export default async function NPSDetailsPage({ params }: Props) {
   if (!campaign) notFound()
 
   const scores = campaign.responses.map((r) => r.score)
-  const promoters = scores.filter((s) => s >= 9).length
-  const neutrals = scores.filter((s) => s >= 7 && s <= 8).length
-  const detractors = scores.filter((s) => s <= 6).length
-  const nps = scores.length > 0
-    ? Math.round(((promoters - detractors) / scores.length) * 100)
-    : null
-  const avg = scores.length > 0
-    ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
-    : null
+  const avgRaw = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null
+  const avgDisplay = avgRaw !== null ? avgRaw.toFixed(1) : null
+
+  const leaderMap = new Map<string, { name: string; scores: number[] }>()
+  campaign.responses.forEach((r) => {
+    if (!r.leader || !r.leaderId) return
+    if (!leaderMap.has(r.leaderId)) leaderMap.set(r.leaderId, { name: r.leader.name, scores: [] })
+    leaderMap.get(r.leaderId)!.scores.push(r.score)
+  })
+  const leaderAverages = Array.from(leaderMap.values())
+    .map(({ name, scores: ls }) => ({
+      name,
+      avg: ls.reduce((a, b) => a + b, 0) / ls.length,
+      count: ls.length,
+    }))
+    .sort((a, b) => b.avg - a.avg)
 
   const distribution: Record<number, number> = {}
   for (let i = 0; i <= 10; i++) distribution[i] = 0
@@ -64,26 +77,47 @@ export default async function NPSDetailsPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500">NPS</p>
-          <p className={`text-3xl font-bold mt-1 ${
-            nps === null ? 'text-slate-400' : nps >= 50 ? 'text-green-600' : nps >= 0 ? 'text-amber-600' : 'text-red-600'
-          }`}>{nps !== null ? nps : '—'}</p>
+          <p className="text-xs text-slate-500">Nota Média Geral</p>
+          <p className={`text-3xl font-bold mt-1 ${avgRaw !== null ? scoreTextColor(avgRaw) : 'text-slate-400'}`}>
+            {avgDisplay ?? '—'}
+          </p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500">Média</p>
-          <p className="text-3xl font-bold text-slate-700 mt-1">{avg ?? '—'}</p>
+          <p className="text-xs text-slate-500">Respostas</p>
+          <p className="text-3xl font-bold text-slate-700 mt-1">{scores.length}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-green-600">Promotores</p>
-          <p className="text-3xl font-bold text-green-600 mt-1">{promoters}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-red-500">Detratores</p>
-          <p className="text-3xl font-bold text-red-500 mt-1">{detractors}</p>
+          <p className="text-xs text-slate-500">Líderes Avaliados</p>
+          <p className="text-3xl font-bold text-slate-700 mt-1">{leaderAverages.length}</p>
         </div>
       </div>
+
+      {leaderAverages.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+          <p className="text-sm font-medium text-slate-700 mb-4">Nota Média por Líder</p>
+          <div className="space-y-3">
+            {leaderAverages.map((l) => (
+              <div key={l.name} className="flex items-center gap-4">
+                <span className="text-sm text-slate-700 w-44 shrink-0 truncate">{l.name}</span>
+                <div className="flex-1 bg-slate-100 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${scoreBarColor(l.avg)}`}
+                    style={{ width: `${(l.avg / 10) * 100}%` }}
+                  />
+                </div>
+                <span className={`text-sm font-bold w-10 text-right shrink-0 ${scoreTextColor(l.avg)}`}>
+                  {l.avg.toFixed(1)}
+                </span>
+                <span className="text-xs text-slate-400 w-24 text-right shrink-0">
+                  {l.count} resposta{l.count !== 1 ? 's' : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {scores.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
@@ -91,12 +125,11 @@ export default async function NPSDetailsPage({ params }: Props) {
           <div className="flex items-end gap-2 h-24">
             {Object.entries(distribution).map(([val, count]) => {
               const n = Number(val)
-              const color = n >= 9 ? 'bg-green-400' : n >= 7 ? 'bg-amber-400' : 'bg-red-400'
               return (
                 <div key={val} className="flex flex-col items-center gap-1 flex-1">
                   <span className="text-xs text-slate-500">{count || ''}</span>
                   <div
-                    className={`w-full ${color} rounded-t`}
+                    className={`w-full rounded-t ${scoreBarColor(n)}`}
                     style={{ height: `${(count / maxCount) * 100}%`, minHeight: count > 0 ? '4px' : '0' }}
                   />
                   <span className="text-xs text-slate-400">{val}</span>
@@ -115,31 +148,24 @@ export default async function NPSDetailsPage({ params }: Props) {
                 <th className="px-4 py-3 font-medium">Colaborador</th>
                 <th className="px-4 py-3 font-medium">Líder avaliado</th>
                 <th className="px-4 py-3 font-medium">Nota</th>
-                <th className="px-4 py-3 font-medium">Categoria</th>
                 <th className="px-4 py-3 font-medium hidden lg:table-cell">Comentário</th>
                 <th className="px-4 py-3 font-medium">Data</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {campaign.responses.map((r) => {
-                const cat = npsCategory(r.score)
-                return (
-                  <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-800">{r.responder.name}</td>
-                    <td className="px-4 py-3 text-slate-600">{r.leader?.name ?? '—'}</td>
-                    <td className="px-4 py-3 font-bold text-slate-700">{r.score}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${cat.color}`}>
-                        {cat.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 max-w-xs truncate hidden lg:table-cell">{r.comment || '—'}</td>
-                    <td className="px-4 py-3 text-slate-400 text-xs">
-                      {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(r.submittedAt))}
-                    </td>
-                  </tr>
-                )
-              })}
+              {campaign.responses.map((r) => (
+                <tr key={r.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3 font-medium text-slate-800">{r.responder.name}</td>
+                  <td className="px-4 py-3 text-slate-600">{r.leader?.name ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <span className={`text-sm font-bold ${scoreTextColor(r.score)}`}>{r.score}</span>
+                  </td>
+                  <td className="px-4 py-3 text-slate-500 max-w-xs truncate hidden lg:table-cell">{r.comment || '—'}</td>
+                  <td className="px-4 py-3 text-slate-400 text-xs">
+                    {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(r.submittedAt))}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
