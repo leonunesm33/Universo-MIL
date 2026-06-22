@@ -140,20 +140,16 @@
   }
 }
 
-/* Admin sidebar responsive margin */
-html:not([data-sidebar-expanded="true"]) .admin-content {
-  margin-left: 3.5rem; /* w-14 = 56px */
-}
-html[data-sidebar-expanded="true"] .admin-content {
-  margin-left: 14rem; /* w-56 = 224px */
-}
+/* Admin sidebar responsive margin — mobile first */
 .admin-content {
+  margin-left: 0; /* mobile: sidebar is overlay, no offset */
   transition: margin-left 0.2s;
 }
-/* Mobile: sidebar is overlay, content takes full width */
-@media (max-width: 639px) {
-  html:not([data-sidebar-expanded="true"]) .admin-content,
+@media (min-width: 640px) {
+  html:not([data-sidebar-expanded="true"]) .admin-content {
+    margin-left: 3.5rem; /* w-14 = 56px */
+  }
   html[data-sidebar-expanded="true"] .admin-content {
-    margin-left: 0;
+    margin-left: 14rem; /* w-56 = 224px */
   }
 }
