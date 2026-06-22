@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface ConcluirButtonProps {
@@ -14,7 +14,12 @@ export function ConcluirButton({ lessonId, initialCompleted, videoCompleted = tr
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const locked = !videoCompleted && !initialCompleted
+  // Sync when server-side data refreshes (e.g. after router.refresh() from auto-complete)
+  useEffect(() => {
+    if (initialCompleted && !completed) setCompleted(true)
+  }, [initialCompleted])
+
+  const locked = !videoCompleted && !completed
 
   async function toggle() {
     if (loading || locked) return

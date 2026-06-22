@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { YouTubePlayer } from './YouTubePlayer'
 import { ConcluirButton } from './ConcluirButton'
 import { FavoriteButton } from './FavoriteButton'
@@ -34,9 +35,21 @@ export function LessonVideoSection({
   dislikeCount,
   isFavorited,
 }: LessonVideoSectionProps) {
-  const [videoCompleted, setVideoCompleted] = useState(false)
+  const router = useRouter()
+  // Unlock the button immediately if the user already watched ≥90% in a prior session
+  const alreadyWatched = durationSecs > 0 && initialWatchedSecs / durationSecs >= 0.90
+  const [videoCompleted, setVideoCompleted] = useState(!videoId || alreadyWatched)
 
-  const effectiveVideoCompleted = !videoId || videoCompleted
+  const effectiveVideoCompleted = videoCompleted
+
+  const handleAutoComplete = useCallback(async () => {
+    await fetch(`/api/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ completed: true, watchedSecs: 99999 }),
+    })
+    router.refresh()
+  }, [lessonId, router])
 
   return (
     <>
@@ -49,6 +62,7 @@ export function LessonVideoSection({
             durationSecs={durationSecs}
             initialWatchedSecs={initialWatchedSecs}
             onVideoCompleted={() => setVideoCompleted(true)}
+            onAutoComplete={handleAutoComplete}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#111]">
