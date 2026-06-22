@@ -202,36 +202,55 @@ export function AdminSidebar({ adminName, userRole }: AdminSidebarProps) {
         expanded ? 'w-56' : 'w-14'
       }`}
     >
-      {/* Top: Logo + Toggle */}
-      <div className="flex items-center px-2 mb-3 shrink-0 min-w-0">
-        <Link
-          href="/admin/dashboard"
-          title="Admin"
-          className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center shrink-0 hover:bg-brand-dark transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
-          <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-        </Link>
-        {expanded && (
+      {/* Top: Logo + Toggle
+           Expanded → horizontal: [logo] [Admin] [chevron]
+           Collapsed → vertical: [logo] / [chevron] — ambos centralizam nos 56px */}
+      {expanded ? (
+        <div className="flex items-center px-2 mb-3 shrink-0 min-w-0">
+          <Link
+            href="/admin/dashboard"
+            title="Dashboard"
+            className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center shrink-0 hover:bg-brand-dark transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </Link>
           <span className="ml-2.5 text-sm font-semibold text-slate-700 truncate flex-1">Admin</span>
-        )}
-        <button
-          onClick={toggleExpanded}
-          title={expanded ? 'Recolher' : 'Expandir'}
-          className={`${expanded ? 'ml-auto' : 'ml-1'} w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand shrink-0`}
-        >
-          {expanded ? (
+          <button
+            onClick={toggleExpanded}
+            title="Recolher menu"
+            aria-label="Recolher menu"
+            className="ml-2 w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand shrink-0"
+          >
             <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
-          ) : (
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-1 mb-2 shrink-0">
+          <Link
+            href="/admin/dashboard"
+            title="Dashboard"
+            className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center hover:bg-brand-dark transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </Link>
+          <button
+            onClick={toggleExpanded}
+            title="Expandir menu"
+            aria-label="Expandir menu"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
             <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
-          )}
-        </button>
-      </div>
+          </button>
+        </div>
+      )}
 
       {/* Nav sections */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 space-y-0.5">
