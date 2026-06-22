@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { createStore, updateStore, toggleStore, deleteStore } from '../actions/config'
 import { toast } from 'sonner'
+import { ConfirmDeleteModal } from '@/components/admin/ConfirmDeleteModal'
 
 interface Store {
   id: string
@@ -99,47 +100,43 @@ function StoreModal({
 }
 
 function DeleteStoreButton({ store }: { store: Store }) {
-  const [confirming, setConfirming] = useState(false)
+  const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  function handleDelete() {
+  function handleConfirm() {
     startTransition(async () => {
       try {
         await deleteStore(store.id)
         toast.success('Loja excluída!')
+        setOpen(false)
       } catch {
         toast.error('Erro ao excluir loja')
       }
     })
   }
 
-  if (confirming) {
-    return (
-      <span className="flex items-center gap-1.5">
-        {store._count.users > 0 && (
-          <span className="text-xs text-amber-600">{store._count.users} usuário(s)</span>
-        )}
-        <button
-          onClick={handleDelete}
-          disabled={pending}
-          className="text-xs text-red-600 font-medium hover:text-red-700 disabled:opacity-50"
-        >
-          {pending ? '…' : 'Confirmar'}
-        </button>
-        <button onClick={() => setConfirming(false)} className="text-xs text-slate-400 hover:text-slate-600">
-          Cancelar
-        </button>
-      </span>
-    )
-  }
+  const description = store._count.users > 0
+    ? `Esta loja possui ${store._count.users} usuário(s) vinculado(s). Esta ação não pode ser desfeita.`
+    : 'Esta ação não pode ser desfeita.'
 
   return (
-    <button
-      onClick={() => setConfirming(true)}
-      className="text-xs text-red-400 hover:text-red-600 font-medium"
-    >
-      Excluir
-    </button>
+    <>
+      {open && (
+        <ConfirmDeleteModal
+          title={`Excluir "${store.name}"?`}
+          description={description}
+          onConfirm={handleConfirm}
+          onCancel={() => setOpen(false)}
+          pending={pending}
+        />
+      )}
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs text-red-400 hover:text-red-600 font-medium"
+      >
+        Excluir
+      </button>
+    </>
   )
 }
 

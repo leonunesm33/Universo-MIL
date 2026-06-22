@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { toggleCourseStatus, deleteCourse } from '@/app/admin/actions/content'
+import { toggleCourseStatus } from '@/app/admin/actions/content'
+import { DeleteCourseButton } from './DeleteCourseButton'
 
 export default async function PlataformaPage() {
   const courses = await prisma.course.findMany({
@@ -89,11 +90,7 @@ export default async function PlataformaPage() {
                     </button>
                   </form>
                   <span className="text-slate-200">·</span>
-                  <form action={deleteCourse.bind(null, course.id)}>
-                    <button type="submit" className="text-xs text-red-500 hover:text-red-700">
-                      Excluir
-                    </button>
-                  </form>
+                  <DeleteCourseButton courseId={course.id} courseName={course.name} />
                 </div>
               </div>
             </div>

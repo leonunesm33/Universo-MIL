@@ -1,16 +1,16 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { deleteClimateResearch } from '@/app/admin/actions/clima'
+import { deleteCourse } from '@/app/admin/actions/content'
 import { ConfirmDeleteModal } from '@/components/admin/ConfirmDeleteModal'
 
-export function DeleteClimateButton({ id }: { id: string }) {
+export function DeleteCourseButton({ courseId, courseName }: { courseId: string; courseName: string }) {
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
 
   function handleConfirm() {
     startTransition(async () => {
-      await deleteClimateResearch(id)
+      await deleteCourse(courseId)
       setOpen(false)
     })
   }
@@ -19,8 +19,8 @@ export function DeleteClimateButton({ id }: { id: string }) {
     <>
       {open && (
         <ConfirmDeleteModal
-          title="Excluir pesquisa?"
-          description="Todas as respostas serão excluídas. Esta ação não pode ser desfeita."
+          title={`Excluir "${courseName}"?`}
+          description="Todos os módulos, aulas e progresso dos alunos serão excluídos. Esta ação não pode ser desfeita."
           onConfirm={handleConfirm}
           onCancel={() => setOpen(false)}
           pending={pending}
@@ -29,9 +29,9 @@ export function DeleteClimateButton({ id }: { id: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-red-400 hover:text-red-600 font-medium"
+        className="text-xs text-red-500 hover:text-red-700"
       >
-        Excluir pesquisa
+        Excluir
       </button>
     </>
   )

@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from 'react'
 import { toast } from 'sonner'
 import { FileUploadButton } from '@/components/admin/FileUploadButton'
+import { ConfirmDeleteModal } from '@/components/admin/ConfirmDeleteModal'
 import {
   updateModule,
   deleteModule,
@@ -258,10 +259,15 @@ function EditLessonModal({
   )
 }
 
+type PendingDelete =
+  | { type: 'module'; id: string; name: string }
+  | { type: 'lesson'; id: string; name: string }
+
 export function CourseEditor({ modules, courseId }: { modules: Module[]; courseId: string }) {
   const [editingModule, setEditingModule] = useState<Module | null>(null)
   const [addLessonModuleId, setAddLessonModuleId] = useState<string | null>(null)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null)
   const [pending, startTransition] = useTransition()
 
   function handleReorderModule(moduleId: string, direction: 'up' | 'down') {
@@ -284,32 +290,43 @@ export function CourseEditor({ modules, courseId }: { modules: Module[]; courseI
     })
   }
 
-  function handleDeleteModule(moduleId: string) {
-    if (!confirm('Excluir este módulo e todas as suas aulas?')) return
+  function handleConfirmDelete() {
+    if (!pendingDelete) return
     startTransition(async () => {
       try {
-        await deleteModule(moduleId, courseId)
-        toast.success('Módulo excluído!')
+        if (pendingDelete.type === 'module') {
+          await deleteModule(pendingDelete.id, courseId)
+          toast.success('Módulo excluído!')
+        } else {
+          await deleteLesson(pendingDelete.id, courseId)
+          toast.success('Aula excluída!')
+        }
+        setPendingDelete(null)
       } catch {
-        toast.error('Erro ao excluir módulo')
-      }
-    })
-  }
-
-  function handleDeleteLesson(lessonId: string) {
-    if (!confirm('Excluir esta aula?')) return
-    startTransition(async () => {
-      try {
-        await deleteLesson(lessonId, courseId)
-        toast.success('Aula excluída!')
-      } catch {
-        toast.error('Erro ao excluir aula')
+        toast.error('Erro ao excluir')
       }
     })
   }
 
   return (
     <>
+      {pendingDelete && (
+        <ConfirmDeleteModal
+          title={
+            pendingDelete.type === 'module'
+              ? `Excluir módulo "${pendingDelete.name}"?`
+              : `Excluir aula "${pendingDelete.name}"?`
+          }
+          description={
+            pendingDelete.type === 'module'
+              ? 'Todas as aulas do módulo serão excluídas. Esta ação não pode ser desfeita.'
+              : 'Esta ação não pode ser desfeita.'
+          }
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setPendingDelete(null)}
+          pending={pending}
+        />
+      )}
       {editingModule && (
         <EditModuleModal
           mod={editingModule}
@@ -372,7 +389,7 @@ export function CourseEditor({ modules, courseId }: { modules: Module[]; courseI
                     Editar
                   </button>
                   <button
-                    onClick={() => handleDeleteModule(mod.id)}
+                    onClick={() => setPendingDelete({ type: 'module', id: mod.id, name: mod.title })}
                     className="text-xs text-red-400 hover:text-red-600"
                   >
                     Excluir
@@ -425,7 +442,7 @@ export function CourseEditor({ modules, courseId }: { modules: Module[]; courseI
                           Editar
                         </button>
                         <button
-                          onClick={() => handleDeleteLesson(lesson.id)}
+                          onClick={() => setPendingDelete({ type: 'lesson', id: lesson.id, name: lesson.title })}
                           className="text-xs text-red-400 hover:text-red-600"
                         >
                           ✕
