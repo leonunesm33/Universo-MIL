@@ -110,8 +110,7 @@ export default async function AlunoPage({
             >
               <option value="COLABORADOR">Colaborador</option>
               <option value="SUPERVISAO">Supervisão</option>
-              <option value="GERENTE">Gerente</option>
-              <option value="GESTAO">Gestão</option>
+              <option value="ADMIN">Admin</option>
             </select>
           </div>
           {stores.length > 0 && (

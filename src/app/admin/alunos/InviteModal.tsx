@@ -98,8 +98,7 @@ export function InviteModal({ stores }: { stores: Store[] }) {
                 <select name="role" className={inputClass} defaultValue="COLABORADOR">
                   <option value="COLABORADOR">Colaborador</option>
                   <option value="SUPERVISAO">Supervisão</option>
-                  <option value="GERENTE">Gerente</option>
-                  <option value="GESTAO">Gestão</option>
+                  <option value="ADMIN">Admin</option>
                 </select>
               </div>
               <p className="text-xs text-slate-400">
