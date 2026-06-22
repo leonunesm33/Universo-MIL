@@ -67,6 +67,7 @@ scripts/
 videos/
 setup-wsl.sh
 prisma/seed-demo.ts
+prisma/update-demo-accounts.ts
 
 # Temporary test screenshots (root level)
 *.png

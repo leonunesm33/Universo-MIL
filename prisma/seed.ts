@@ -56,18 +56,27 @@ async function main() {
   console.log('✅ 3 Lojas criadas')
 
   // ── USUÁRIOS ─────────────────────────────────────────────────────
-  const adminPassword = await bcrypt.hash('admin123', 10)
+  const defaultPassword = await bcrypt.hash('teste123', 10)
   const admin = await prisma.user.create({
     data: {
       name: 'Admin',
-      email: 'admin@plataforma.com',
-      passwordHash: adminPassword,
+      email: 'admin@demo.com.br',
+      passwordHash: defaultPassword,
       role: 'ADMIN',
     },
   })
   console.log('✅ Admin criado:', admin.email)
 
-  const studentPassword = await bcrypt.hash('teste123', 10)
+  // Usuário por loja (acesso demo por unidade)
+  for (const store of [storeCentro, storeShopping, storeNorte]) {
+    const email = store.name.toLowerCase().replace(/\s+/g, '') + '@demo.com.br'
+    await prisma.user.create({
+      data: { name: store.name, email, passwordHash: defaultPassword, role: 'COLABORADOR', storeId: store.id },
+    })
+    console.log('✅ Usuário loja criado:', email)
+  }
+
+  const studentPassword = defaultPassword
   const student = await prisma.user.create({
     data: {
       name: 'Colaboradora Teste',
@@ -623,11 +632,12 @@ async function main() {
   console.log('✅ Campanha NPS Líderes criada:', nps.title)
 
   console.log('\n🎉 Seed concluído com sucesso!')
-  console.log('   Admin:       admin@plataforma.com       /  admin123')
-  console.log('   Colaboradora: teste@plataforma.com      /  teste123')
-  console.log('   Maria:        maria.silva@plataforma.com /  teste123')
-  console.log('   Ana:          ana.costa@plataforma.com   /  teste123')
-  console.log('   Supervisora:  supervisao@plataforma.com  /  teste123')
+  console.log('   admin@demo.com.br              /  teste123  (ADMIN)')
+  console.log('   lojacentro@demo.com.br         /  teste123  (Loja Centro)')
+  console.log('   lojashopping@demo.com.br       /  teste123  (Loja Shopping)')
+  console.log('   lojanorte@demo.com.br          /  teste123  (Loja Norte)')
+  console.log('   teste@plataforma.com           /  teste123  (COLABORADOR)')
+  console.log('   supervisao@plataforma.com      /  teste123  (SUPERVISAO)')
 }
 
 main()
