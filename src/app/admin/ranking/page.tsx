@@ -137,6 +137,7 @@ export default async function RankingPage({
             <p className="text-slate-400 text-sm">Nenhuma aluna encontrada.</p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
@@ -191,6 +192,7 @@ export default async function RankingPage({
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

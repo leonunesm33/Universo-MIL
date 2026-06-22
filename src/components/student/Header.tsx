@@ -193,7 +193,7 @@ export function Header({ user, role, logoUrl }: HeaderProps) {
 
           {/* ── Search panel ── */}
           {activePanel === 'search' && (
-            <div className="absolute top-12 right-0 w-[380px] bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
+            <div className="absolute top-12 right-0 w-[380px] max-w-[calc(100vw-1rem)] bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3 border-b border-[#2a2a2a]">
                 <svg viewBox="0 0 24 24" className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -227,7 +227,7 @@ export function Header({ user, role, logoUrl }: HeaderProps) {
 
           {/* ── History panel ── */}
           {activePanel === 'history' && (
-            <div className="absolute top-12 right-0 w-[340px] bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
+            <div className="absolute top-12 right-0 w-[340px] max-w-[calc(100vw-1rem)] bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
               <div className="px-4 py-3 border-b border-[#2a2a2a]">
                 <p className="text-sm font-semibold text-white">Aulas recentes</p>
               </div>
@@ -253,7 +253,7 @@ export function Header({ user, role, logoUrl }: HeaderProps) {
 
           {/* ── Profile dropdown ── */}
           {activePanel === 'profile' && (
-            <div className="absolute top-12 right-0 w-[230px] bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
+            <div className="absolute top-12 right-0 w-[230px] max-w-[calc(100vw-1rem)] bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
               <div className="px-4 py-4 border-b border-[#2a2a2a]">
                 <div className="w-10 h-10 rounded-full bg-[#20b2aa] flex items-center justify-center text-white font-bold text-sm mb-2">
                   {initials}

@@ -78,7 +78,7 @@ export default async function AlunosPage({
       </div>
 
       {/* Search + filter form */}
-      <form className="mb-4 flex gap-2" method="GET">
+      <form className="mb-4 flex flex-wrap sm:flex-nowrap gap-2" method="GET">
         <input
           name="q"
           defaultValue={q ?? ''}
@@ -109,6 +109,7 @@ export default async function AlunosPage({
             <p className="text-slate-400 text-sm">Nenhum aluno encontrado.</p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
@@ -193,6 +194,7 @@ export default async function AlunosPage({
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

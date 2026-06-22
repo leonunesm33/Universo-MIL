@@ -108,6 +108,7 @@ export default async function RelatoriosPage({
                       {storeId ? 'Nenhum aluno desta loja matriculado.' : 'Nenhum aluno matriculado.'}
                     </p>
                   ) : (
+                    <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="bg-slate-50">
@@ -163,6 +164,7 @@ export default async function RelatoriosPage({
                         })}
                       </tbody>
                     </table>
+                    </div>
                   )}
                 </div>
               )

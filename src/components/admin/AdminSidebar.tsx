@@ -168,9 +168,11 @@ const navSections: NavSection[] = [
 interface AdminSidebarProps {
   adminName: string
   userRole: AppRole
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export function AdminSidebar({ adminName, userRole }: AdminSidebarProps) {
+export function AdminSidebar({ adminName, userRole, mobileOpen, onMobileClose }: AdminSidebarProps) {
   const pathname = usePathname()
   const [expanded, setExpanded] = useState(false)
 
@@ -197,10 +199,19 @@ export function AdminSidebar({ adminName, userRole }: AdminSidebarProps) {
     .filter((section) => section.items.length > 0)
 
   return (
+    <>
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 sm:hidden"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
     <aside
-      className={`fixed left-0 top-0 bottom-0 bg-white border-r border-slate-200 z-40 flex flex-col py-3 transition-all duration-200 overflow-hidden ${
-        expanded ? 'w-56' : 'w-14'
-      }`}
+      className={`fixed left-0 top-0 bottom-0 bg-white border-r border-slate-200 z-40 flex flex-col py-3 transition-all duration-200 overflow-hidden
+        ${expanded ? 'w-56' : 'w-14'}
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}
+      `}
     >
       {/* Top: Logo + Toggle
            Expanded → horizontal: [logo] [Admin] [chevron]
@@ -299,5 +310,6 @@ export function AdminSidebar({ adminName, userRole }: AdminSidebarProps) {
         {expanded && <span className="text-xs text-slate-500 truncate">{adminName}</span>}
       </div>
     </aside>
+    </>
   )
 }
