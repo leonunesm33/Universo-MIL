@@ -72,3 +72,7 @@ prisma/update-demo-accounts.ts
 # Temporary test screenshots (root level)
 *.png
 *.webm
+
+# === Reforco: qualquer variante de .env com segredos ===
+.env.*
+.env.service
